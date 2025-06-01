@@ -1,4 +1,3 @@
-
 import React, { useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useCameraStream } from '@/hooks/useCameraStream';
@@ -14,7 +13,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onPhotoCapture }) 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const { videoRef, isStreaming, startCamera, stopCamera } = useCameraStream();
+  const { videoRef, isStreaming, hasPermission, startCamera, stopCamera } = useCameraStream();
   const { getCurrentLocation } = useGeolocation();
 
   const capturePhoto = useCallback(async () => {
@@ -75,6 +74,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onPhotoCapture }) 
           <CameraInterface 
             onStartCamera={startCamera}
             onFileUpload={handleFileUploadClick}
+            hasCameraPermission={hasPermission}
           />
         ) : (
           <CameraPreview
