@@ -25,9 +25,12 @@ export const useCameraStream = () => {
       setDebugInfo(prev => ({ ...prev, trackCount: videoTracks.length }));
       
       if (videoRef.current) {
+        console.log('Setting video srcObject with stream...');
         videoRef.current.srcObject = stream;
         
+        console.log('Attaching onloadedmetadata event listener...');
         videoRef.current.onloadedmetadata = async () => {
+          console.log('onloadedmetadata event fired!');
           if (!videoRef.current) return;
           
           console.log('Video metadata loaded:', {
@@ -43,6 +46,7 @@ export const useCameraStream = () => {
             trackCount: videoTracks.length
           });
 
+          console.log('Attempting to play video...');
           try {
             await videoRef.current.play();
             console.log('Video playback started successfully');
@@ -59,13 +63,9 @@ export const useCameraStream = () => {
           }
         };
         
+        console.log('Checking immediate readyState:', videoRef.current.readyState);
         if (videoRef.current.readyState >= 1) {
-          console.log('Immediate playback attempt:', {
-            readyState: videoRef.current.readyState,
-            videoWidth: videoRef.current.videoWidth,
-            videoHeight: videoRef.current.videoHeight
-          });
-          
+          console.log('Video already has metadata, attempting immediate playback');
           try {
             await videoRef.current.play();
             console.log('Immediate playback successful');
@@ -79,6 +79,8 @@ export const useCameraStream = () => {
               stack: playError.stack
             });
           }
+        } else {
+          console.log('Waiting for metadata to load...');
         }
       }
     } catch (error) {
