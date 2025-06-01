@@ -13,7 +13,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onPhotoCapture }) 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const { videoRef, isStreaming, hasPermission, startCamera, stopCamera } = useCameraStream();
+  const { videoRef, isStreaming, hasPermission, debugInfo, startCamera, stopCamera } = useCameraStream();
   const { getCurrentLocation } = useGeolocation();
 
   const capturePhoto = useCallback(async () => {
@@ -81,6 +81,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onPhotoCapture }) 
             videoRef={videoRef}
             onCapture={capturePhoto}
             onCancel={stopCamera}
+            debugInfo={debugInfo}
           />
         )}
       </div>

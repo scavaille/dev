@@ -1,4 +1,3 @@
-
 import { useRef, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 
@@ -6,6 +5,12 @@ export const useCameraStream = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [debugInfo, setDebugInfo] = useState({
+    readyState: 0,
+    videoWidth: 0,
+    videoHeight: 0,
+    trackCount: 0
+  });
 
   const startCamera = useCallback(async () => {
     try {
@@ -15,39 +20,64 @@ export const useCameraStream = () => {
         audio: false 
       });
       
-      console.log('Camera access granted, setting up video stream...');
+      const videoTracks = stream.getVideoTracks();
+      console.log('Video tracks:', videoTracks.length, videoTracks[0]?.label);
+      setDebugInfo(prev => ({ ...prev, trackCount: videoTracks.length }));
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         
-        // Wait for metadata to load, then play
         videoRef.current.onloadedmetadata = async () => {
-          console.log('Video metadata loaded, attempting to play...');
-          try {
-            if (videoRef.current) {
-              await videoRef.current.play();
-              console.log('Video is now playing');
-              setIsStreaming(true);
-              setHasPermission(true);
-              toast.success('Camera ready!');
-            }
-          } catch (playError) {
-            console.error('Video play error:', playError);
-            toast.error('Failed to start camera preview');
-          }
-        };
-        
-        // Fallback: try to play immediately if metadata is already loaded
-        if (videoRef.current.readyState >= 1) {
-          console.log('Video metadata already available, playing immediately...');
+          if (!videoRef.current) return;
+          
+          console.log('Video metadata loaded:', {
+            readyState: videoRef.current.readyState,
+            videoWidth: videoRef.current.videoWidth,
+            videoHeight: videoRef.current.videoHeight
+          });
+          
+          setDebugInfo({
+            readyState: videoRef.current.readyState,
+            videoWidth: videoRef.current.videoWidth,
+            videoHeight: videoRef.current.videoHeight,
+            trackCount: videoTracks.length
+          });
+
           try {
             await videoRef.current.play();
-            console.log('Video is now playing (immediate)');
+            console.log('Video playback started successfully');
             setIsStreaming(true);
             setHasPermission(true);
             toast.success('Camera ready!');
           } catch (playError) {
-            console.error('Immediate video play error:', playError);
+            console.error('Video play error:', {
+              name: playError.name,
+              message: playError.message,
+              stack: playError.stack
+            });
+            toast.error('Failed to start camera preview');
+          }
+        };
+        
+        if (videoRef.current.readyState >= 1) {
+          console.log('Immediate playback attempt:', {
+            readyState: videoRef.current.readyState,
+            videoWidth: videoRef.current.videoWidth,
+            videoHeight: videoRef.current.videoHeight
+          });
+          
+          try {
+            await videoRef.current.play();
+            console.log('Immediate playback successful');
+            setIsStreaming(true);
+            setHasPermission(true);
+            toast.success('Camera ready!');
+          } catch (playError) {
+            console.error('Immediate playback error:', {
+              name: playError.name,
+              message: playError.message,
+              stack: playError.stack
+            });
           }
         }
       }
@@ -64,6 +94,12 @@ export const useCameraStream = () => {
       stream.getTracks().forEach(track => track.stop());
       videoRef.current.srcObject = null;
       setIsStreaming(false);
+      setDebugInfo({
+        readyState: 0,
+        videoWidth: 0,
+        videoHeight: 0,
+        trackCount: 0
+      });
     }
   }, []);
 
@@ -71,6 +107,7 @@ export const useCameraStream = () => {
     videoRef,
     isStreaming,
     hasPermission,
+    debugInfo,
     startCamera,
     stopCamera
   };
