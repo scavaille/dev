@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { MapPin } from 'lucide-react';
-import { CameraCapture } from '@/components/CameraCapture';
+import { PhotoUploader } from '@/components/PhotoUploader';
 import { PhotoFilter } from '@/components/PhotoFilter';
 import { LocationsList } from '@/components/LocationsList';
 import { findMatchingZone, LocationZone } from '@/components/LocationZones';
@@ -58,7 +57,7 @@ const Index = () => {
         <div className="flex flex-col items-center">
           {!showResult ? (
             <>
-              <CameraCapture onPhotoCapture={handlePhotoCapture} />
+              <PhotoUploader onPhotoCapture={handlePhotoCapture} />
               <LocationsList />
             </>
           ) : (
