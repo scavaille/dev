@@ -27,34 +27,45 @@ export const useCameraStream = () => {
       if (videoRef.current) {
         console.log('Setting video srcObject with stream...');
         videoRef.current.srcObject = stream;
+
+        // Add onloadeddata event listener
+        videoRef.current.onloadeddata = () => {
+          console.log('onloadeddata event fired - first frame is loaded');
+          if (videoRef.current) {
+            console.log('Video dimensions after data load:', {
+              width: videoRef.current.videoWidth,
+              height: videoRef.current.videoHeight
+            });
+          }
+        };
         
         console.log('Attaching onloadedmetadata event listener...');
         videoRef.current.onloadedmetadata = async () => {
           console.log('onloadedmetadata event fired!');
           if (!videoRef.current) return;
           
-          console.log('Video metadata loaded:', {
+          const dimensions = {
             readyState: videoRef.current.readyState,
             videoWidth: videoRef.current.videoWidth,
             videoHeight: videoRef.current.videoHeight
-          });
+          };
+          
+          console.log('Video metadata loaded:', dimensions);
           
           setDebugInfo({
-            readyState: videoRef.current.readyState,
-            videoWidth: videoRef.current.videoWidth,
-            videoHeight: videoRef.current.videoHeight,
+            ...dimensions,
             trackCount: videoTracks.length
           });
 
-          console.log('Attempting to play video...');
+          console.log('Attempting to play video after metadata...');
           try {
             await videoRef.current.play();
-            console.log('Video playback started successfully');
+            console.log('Video playback started successfully after metadata');
             setIsStreaming(true);
             setHasPermission(true);
             toast.success('Camera ready!');
           } catch (playError) {
-            console.error('Video play error:', {
+            console.error('Video play error after metadata:', {
               name: playError.name,
               message: playError.message,
               stack: playError.stack
@@ -63,7 +74,14 @@ export const useCameraStream = () => {
           }
         };
         
-        console.log('Checking immediate readyState:', videoRef.current.readyState);
+        console.log('Current video element state:', {
+          readyState: videoRef.current.readyState,
+          videoWidth: videoRef.current.videoWidth,
+          videoHeight: videoRef.current.videoHeight,
+          style: videoRef.current.style,
+          display: window.getComputedStyle(videoRef.current).display
+        });
+
         if (videoRef.current.readyState >= 1) {
           console.log('Video already has metadata, attempting immediate playback');
           try {
